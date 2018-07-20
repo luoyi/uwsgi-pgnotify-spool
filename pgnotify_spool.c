@@ -131,16 +131,11 @@ static void *pgnotify_loop(void *foobar) {
 		for(;;) {
 			PGnotify *notify = PQnotifies(upc->conn);
 			if (notify == NULL) break;
-			uwsgi_log_verbose("received postgresql notification for %s by PID %d", notify->relname, (int) notify->be_pid);
-			
-			if ( notify->extra ) {
-				uwsgi_log_verbose(" extra = %s", notify->extra);
-			}
-			uwsgi_log_verbose("\n");
+			uwsgi_log_verbose("received postgresql notification for %s by PID %d, extra = %s\n", notify->relname, (int) notify->be_pid, notify->extra);
 			struct uwsgi_buffer *ub = uwsgi_buffer_new(uwsgi.page_size);
 			if ( notify->extra ) {
 				char * key = "payload";
-				size_t klen = sizeof(key);
+				size_t klen = sizeof(key)-1;
 				uwsgi_buffer_append_keyval(ub, key, klen, notify->extra, strlen(notify->extra));
 			}
 			char *filename = uwsgi_spool_request(NULL, ub->buf, ub->pos, NULL, 0);
@@ -157,7 +152,7 @@ static void pgnotify_spawn_thread() {
 	pthread_create(&t, NULL, pgnotify_loop, NULL);
 }
 
-struct uwsgi_plugin pgnotify_plugin = {
+struct uwsgi_plugin pgnotify_spool_plugin = {
 	.name = "pgnotify_spool",
 	.options = pgnotify_options,
 	.init = pgnotify_init,
