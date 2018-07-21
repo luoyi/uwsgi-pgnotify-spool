@@ -15,12 +15,18 @@ uwsgi --buid-plugin https://github.com/luoyi/uwsgi-pgnotify-spool
 Configuration
 =============
 
-raise signal 17 whenever postgresql server on localhost notify channel FOOBAR
+Please see the pgnotify_spool.ini and spooler_demo.py file for config example
 
 ```ini
 [uwsgi]
-plugins = pgnotify
-pgnotify-signal = 17 FOOBAR user=postgres
+master          = true
+plugins         = pgnotify_spool,python
+socket          = /tmp/pgnotify_spool.sock
+spooler         = /var/spool/pgnotify
+pgnotify-spool  = TEST postgresql://uuu:ppp@127.0.0.1:5432/ddd  
+uid             = http
+gid             = http
+spooler-import  = /tmp/spooler_demo.py
 ...
 ```
 
